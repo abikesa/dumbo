@@ -26,7 +26,7 @@ jb build . || { echo "❌ Jupyter Book build failed. Aborting."; exit 1; }
 echo "📦 Copying extra directories to _build/html/"
 dirs=(
   pdfs figures media testbin nis myhtml dedication python ai r stata bash xml data
-  aperitivo antipasto primo secondo contorno insalata formaggio-e-frutta dolce caffe digestivo
+  aperitivo antipasto primo secondo contorno insalata formaggio-e-frutta dolce caffe digestivo ukubona
 )
 shopt -s dotglob nullglob
 for d in "${dirs[@]}"; do
