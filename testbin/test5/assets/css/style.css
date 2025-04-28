@@ -1,0 +1,193 @@
+/* Center all content on the page */
+/*
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+}
+*/
+
+
+/* Title styling */
+h1 {
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Section Names */
+h2 {
+  margin-bottom: 10px;
+}
+
+/* Left alignment for sections after the slide bar */
+form, #riskOutput, #plotDiv {
+  text-align: left;
+}
+
+/* Radio button groups aligned in 3 columns */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;  /* Add space between radio buttons */
+  justify-content: left;
+}
+
+/* Center the calculator selection radio groups */
+.calculator-selection {
+  justify-content: center;
+  text-align: center;
+}
+
+.radio-group input[type="radio"] {
+  margin-right: 5px;
+}
+
+/* Model Toggle Switch Styles */
+.model-toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px; /* Add space between labels and switch */
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+#model1Label, #model2Label {
+  font-size: 14px;
+}
+
+#model1Label {
+  margin-right: 10px; /* Adjust spacing on the right of Model 1 */
+}
+
+#model2Label {
+  margin-left: 10px; /* Adjust spacing on the left of Model 2 */
+}
+
+/* Form and Plot styling */
+form {
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #1976D2;
+}
+
+#plotDiv {
+  margin-top: 20px;
+}
+
+/* Center the Load Calculator button */
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+# flick 20250409213601-7VQY
+# flick 20250409214208-ldF7
+# flick 20250409214624-iUNy
+# flick 20250409220132-NLNZ
+# flick 20250409220323-Fpu2
+# flick 20250409230552-tjkT
+# flick 20250409234307-0Wvo
+# flick 20250410023654-dyne
+# flick 20250410031042-PsCU
+# flick 20250410031742-zu01
+# flick 20250410133823-UeT1
+# flick 20250410145603-wjfi
+# flick 20250410162337-Dl9T
+# flick 20250410162735-Ue3d
+# flick 20250410202641-Yz8v
+# flick 20250410232148-aGBv
+# flick 20250413005500-AxyY
+# flick 20250413011141-AHfR
+# flick 20250413171241-16VL
+# flick 20250413213135-udSl
+# flick 20250413233322-FmXk
+# flick 20250414181112-7PsF
+# flick 20250414182649-moak
+# flick 20250415193034-OoQ2
+# flick 20250415193727-Nszt
+# flick 20250415204935-F3G8
+# flick 20250415211839-obit
+# flick 20250415220557-7jxk
+# flick 20250415233205-5E9i
+# flick 20250416020255-GltI
+# flick 20250416023207-m7sQ
+# flick 20250416034834-cLKg
+# flick 20250416151120-vA6N
+# flick 20250416151913-xrbJ
+# flick 20250416161508-M2MI
+# flick 20250416171215-OaLm
+# flick 20250416191857-64SL
+# flick 20250416213543-pDS7
+# flick 20250416214708-beVT
+# flick 20250416222627-gTku
+# flick 20250416224029-YPU3
+# flick 20250417000350-ZpAU
+# flick 20250417001512-5iXi
+# flick 20250417030420-KTUl
+# flick 20250417034854-aay3
+# flick 20250418022525-NvF3
+# flick 20250418032005-GB0t
+# flick 20250422004339-0KMW
+# flick 20250422034843-kQZQ
+# flick 20250422042013-gNJz
+# flick 20250422212435-2VuQ
+# flick 20250423181656-VDSp
