@@ -182,17 +182,5 @@ shall inherit the fire.
 ```sh
 find decoy -name "*.py" | head -n 20
 ```
-# flick 20250418021901-xz5M
-# flick 20250418025025-PnFW
-# flick 20250418032005-UPTJ
-# flick 20250422004339-cS97
-# flick 20250422040655-dVa0
-# flick 20250422214553-Jo7U
-# flick 20250423001645-HVq4
-# flick 20250423005252-MnUM
-# flick 20250423014059-0BFV
-# flick 20250423171403-UCCa
-# flick 20250423175005-HQeV
-# flick 20250423195659-0Afe
-# flick 20250423200931-2pC3
-# flick 20250428112847-8Ziy
+
+# flick 20250429020306-5hMt
