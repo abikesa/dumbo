@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ARTICLE TITLE - Ukubona Wiki</title>
+  <title>Mythology - Ukubona Wiki</title>
 
   <link rel="stylesheet" href="../style/article.css">
+  <link rel="stylesheet" href="../style/settings-bar.css">
+
   <script src="../js/toggle-darkmode.js" defer></script>
   <script src="../js/wiki-controls.js" defer></script>
 </head>
@@ -16,11 +18,8 @@
       <img src="../images/ukubona-004.jpg" alt="Ukubona Logo" id="logo">
     </a>
   </div>
-  <div id="header-center">
-    <input type="text" placeholder="Search Ukubona..." id="search-input">
-  </div>
   <div id="header-right">
-    <a href="#">Login</a> <a href="#">Create Account</a> <span>...</span>
+    <a href="#">Login</a> <a href="#">Create Account</a>
   </div>
 </header>
 
@@ -40,25 +39,37 @@
   <!-- Main Content -->
   <main id="content">
 
-    <h1>ARTICLE TITLE</h1>
+    <h1>Mythology</h1>
 
+    <!-- Infobox -->
     <aside id="infobox">
       <table>
-        <tr><th>ARTICLE TITLE</th></tr>
-        <tr><td><strong>Discipline:</strong> DISCIPLINE</td></tr>
-        <tr><td><strong>Region:</strong> REGION</td></tr>
-        <tr><td><strong>Focus:</strong> FOCUS</td></tr>
+        <tr>
+          <th>Mythology</th>
+        </tr>
+        <tr>
+          <td><strong>Discipline:</strong> Mythology</td>
+        </tr>
+        <tr>
+          <td><strong>Region:</strong> Global</td>
+        </tr>
+        <tr>
+          <td><strong>Focus:</strong> Symbolism, Tradition</td>
+        </tr>
       </table>
     </aside>
 
+    <!-- Main Article Sections -->
     <section>
       <h2 id="introduction">Introduction</h2>
-      <p>Content placeholder for ARTICLE TITLE.</p>
+      <p>Mythology explores the stories, symbols, and traditions that cultures use to explain existence, origins, and values.</p>
     </section>
 
     <section>
       <h2 id="background">Background</h2>
-      <p>More background text for ARTICLE TITLE.</p>
+      <p>Many insights on mythology as cognitive frameworks are inspired by 
+        <a href="https://abikesa.github.io/book-ukubona/" target="_blank" id="ref1">Ukubona: A Cognitive Interface</a>.<sup><a href="#acknowledgments">[1]</a></sup>
+      </p>
     </section>
 
     <section>
@@ -71,7 +82,10 @@
     <section>
       <h2 id="acknowledgments">Acknowledgments</h2>
       <ol class="acknowledgments-list">
-        <li>Adapted from <a href="https://abikesa.github.io/book-ukubona/" target="_blank">Ukubona: A Cognitive Interface</a> by Abimereki Muzaale.</li>
+        <li>Adapted from 
+          <a href="https://abikesa.github.io/book-ukubona/" target="_blank">Ukubona: A Cognitive Interface</a> 
+          by Abimereki Muzaale. [<a href="#ref1">↩︎</a>]
+        </li>
       </ol>
     </section>
 
@@ -79,13 +93,44 @@
 
   <!-- Right Settings Sidebar -->
   <aside id="settings-bar">
-    <strong>Settings</strong>
-    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-    <button id="small-text">Small Text</button>
-    <button id="normal-text">Normal Text</button>
-    <button id="large-text">Large Text</button>
-    <button id="standard-width">Standard Width</button>
-    <button id="wide-width">Wide Width</button>
+    <div class="settings-section">Appearance</div>
+
+    <div class="radio-group">
+      <div class="radio-option">
+        <input type="radio" name="text-size" id="small-text">
+        <label for="small-text">Small</label>
+      </div>
+      <div class="radio-option">
+        <input type="radio" name="text-size" id="normal-text" checked>
+        <label for="normal-text">Standard</label>
+      </div>
+      <div class="radio-option">
+        <input type="radio" name="text-size" id="large-text">
+        <label for="large-text">Large</label>
+      </div>
+    </div>
+
+    <div class="radio-group">
+      <div class="radio-option">
+        <input type="radio" name="width-setting" id="standard-width" checked>
+        <label for="standard-width">Standard</label>
+      </div>
+      <div class="radio-option">
+        <input type="radio" name="width-setting" id="wide-width">
+        <label for="wide-width">Wide</label>
+      </div>
+    </div>
+
+    <div class="radio-group">
+      <div class="radio-option">
+        <input type="radio" name="theme-setting" id="light-mode" checked>
+        <label for="light-mode">Light</label>
+      </div>
+      <div class="radio-option">
+        <input type="radio" name="theme-setting" id="dark-mode">
+        <label for="dark-mode">Dark</label>
+      </div>
+    </div>
   </aside>
 
 </div>
