@@ -118,7 +118,10 @@ def main(commit_message, git_remote, ghp_remote):
     try:
         run(f"git commit -m \"{commit_message}\"  # commit with message")
         click.secho(f"⬆️ Pushing to {git_remote}/{git_branch}...", fg="cyan")
-        run(f"git push {git_remote} {git_branch}  # push to remote")
+        if git_branch == "main":
+            run(f"git pull --rebase {git_remote} main && git push {git_remote} main")
+        else:
+            run(f"git push {git_remote} {git_branch}  # push to remote")
     except:
         click.secho("⚠️ Nothing to commit or push.", fg="yellow")
 
