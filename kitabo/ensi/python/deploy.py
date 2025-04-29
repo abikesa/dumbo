@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import subprocess
+import shutil
 import os
 import sys
-import shutil
+from pathlib import Path
+import click
 
 def run(cmd, check=True, capture_output=False, cwd=None):
     """Run shell command."""
@@ -13,12 +15,6 @@ def run(cmd, check=True, capture_output=False, cwd=None):
         return result.stdout.strip()
     return None
 
-def prompt(msg, default=None):
-    """Prompt for input with default."""
-    if default:
-        return input(f"{msg} (default: {default}): ") or default
-    return input(f"{msg}: ")
-
 def branch_exists(branch):
     """Check if a Git branch exists locally."""
     try:
@@ -27,51 +23,54 @@ def branch_exists(branch):
     except subprocess.CalledProcessError:
         return False
 
-def main():
-    os.chdir(Path(__file__).resolve().parents[1])  # Move to 'ensi/' directory
+@click.command()
+@click.option('--commit-message', prompt="📜 Enter your commit message", help="The Git commit message.")
+@click.option('--git-remote', prompt="🛰️ Enter the Git remote to push to", default="origin", show_default=True, help="Git remote name.")
+@click.option('--ghp-remote', prompt="🚀 Enter the remote for ghp-import", default="origin", show_default=True, help="Remote for ghp-import deployment.")
+def main(commit_message, git_remote, ghp_remote):
+    """Deploy the Jupyter Book with cleaning, building, and ghp-import."""
     
-    # 🌊 0. Prompt the navigator
-    commit_message = prompt("📜 Enter your commit message")
-    
-    current_branch = run("git branch --show-current", capture_output=True)
-    git_remote = prompt("🛰️ Enter the Git remote to push to", "origin")
-    git_branch = prompt("🌿 Enter the Git branch to push to", current_branch)
-    ghp_remote = prompt("🚀 Enter the remote for ghp-import", "origin")
+    # Move to 'ensi/' directory
+    os.chdir(Path(__file__).resolve().parents[1])
 
-    # Check branch exists
+    # Get current branch after cd into project
+    current_branch = run("git branch --show-current", capture_output=True) or "main"
+    git_branch = click.prompt("🌿 Enter the Git branch to push to", default=current_branch, show_default=True)
+
+    # Validate branch
     if not branch_exists(git_branch):
-        print(f"❌ Branch '{git_branch}' does not exist. Please create it first.")
+        click.secho(f"❌ Branch '{git_branch}' does not exist. Please create it first.", fg="red")
         sys.exit(1)
 
-    # Warn if trying to push to main
+    # Warn if pushing to main
     if git_branch == "main":
-        confirm = prompt("⚠️  WARNING: You are about to push to 'main'. Type 'confirm' to proceed")
+        confirm = click.prompt("⚠️  WARNING: You are pushing to 'main'. Type 'confirm' to proceed", default="", show_default=False)
         if confirm != "confirm":
-            print("🛑 Cancelled push to main.")
+            click.secho("🛑 Cancelled push to main.", fg="red")
             sys.exit(1)
 
-    # 🪛 1. Clean and rebuild
-    print("🧼 Cleaning Jupyter Book...")
+    # 🪛 Clean and build
+    click.secho("🧼 Cleaning Jupyter Book...", fg="cyan")
     try:
         run("jb clean .")
     except:
-        print("⚠️ jb clean failed (might be clean already).")
-    
+        click.secho("⚠️ jb clean failed (maybe already clean).", fg="yellow")
+
     if os.path.exists("bash/bash_clean.sh"):
         try:
             run("bash/bash_clean.sh")
         except:
-            print("ℹ️ No extended clean script found.")
+            click.secho("ℹ️ No extended clean script found.", fg="yellow")
 
-    print("🏗️ Building Jupyter Book...")
+    click.secho("🏗️ Building Jupyter Book...", fg="cyan")
     try:
         run("jb build .")
     except:
-        print("❌ Jupyter Book build failed. Exiting.")
+        click.secho("❌ Jupyter Book build failed.", fg="red")
         sys.exit(1)
 
-    # 🍱 Inject extra directories
-    print("📦 Copying extra folders...")
+    # 🍱 Copy extra folders
+    click.secho("📦 Copying extra folders...", fg="cyan")
     extra_dirs = [
         "pdfs", "figures", "media", "testbin", "nis", "myhtml", "dedication", "python", "ai",
         "r", "stata", "bash", "xml", "data", "aperitivo", "antipasto", "primo", "secondo",
@@ -90,45 +89,44 @@ def main():
                 else:
                     shutil.copy2(s, d_)
 
-    # ✂️ 2. Check if _build/html actually changed
-    print("🔍 Checking if _build/html has changes...")
+    # ✂️ Check if build changed
+    click.secho("🔍 Checking if _build/html has changes...", fg="cyan")
     tmp_dir = "/tmp/temp-ghp-check"
     try:
         run(f"git worktree add {tmp_dir} gh-pages")
     except:
-        pass  # might already exist
+        pass
 
     if os.path.exists(tmp_dir):
         try:
             diff = subprocess.run(["diff", "-r", "_build/html", tmp_dir], capture_output=True)
             if diff.returncode == 0:
-                print("🧘 No changes in built HTML. Skipping ghp-import.")
+                click.secho("🧘 No changes detected. Skipping ghp-import.", fg="green")
             else:
-                print("🚀 Changes detected in build. Deploying with ghp-import...")
+                click.secho("🚀 Changes detected. Deploying with ghp-import...", fg="cyan")
                 run(f"ghp-import -n -p -f -r {ghp_remote} _build/html")
         finally:
             run(f"git worktree remove {tmp_dir} --force")
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    # 🦈 3. Plant flicks
-    print("🌿 Planting flicks...")
+    # 🦈 Plant flicks
+    click.secho("🌿 Planting flicks...", fg="cyan")
     try:
         run("python python/plant_flicks_frac.py --percent 23")
     except:
-        print("⚠️ Flick planting encountered issues.")
+        click.secho("⚠️ Flick planting encountered issues.", fg="yellow")
 
-    # 🏝️ 4. Commit and push
-    print("🧾 Staging changes...")
+    # 🏝️ Commit and push
+    click.secho("🧾 Staging changes...", fg="cyan")
     run("git add .")
 
-    print("✍️ Committing...")
+    click.secho("✍️ Committing...", fg="cyan")
     try:
         run(f"git commit -m \"{commit_message}\"")
-        print(f"⬆️ Pushing to [{git_remote}/{git_branch}]...")
+        click.secho(f"⬆️ Pushing to [{git_remote}/{git_branch}]...", fg="cyan")
         run(f"git push {git_remote} {git_branch}")
     except:
-        print("⚠️ Nothing committed. Skipping push.")
+        click.secho("⚠️ Nothing committed. Skipping push.", fg="yellow")
 
 if __name__ == "__main__":
-    from pathlib import Path
     main()
