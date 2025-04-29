@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+trap 'git worktree remove /tmp/temp-ghp-check --force 2>/dev/null || true; rm -rf /tmp/temp-ghp-check 2>/dev/null || true' EXIT
 
 # ──────────────────────────────────────────────────────────────
 # 🌊 0. Prompt the navigator
@@ -14,6 +15,12 @@ git_remote=${git_remote:-origin}
 
 read -p "🌿 Enter the Git branch to push to (default: $current_branch): " git_branch
 git_branch=${git_branch:-$current_branch}
+
+# Check if branch exists
+if ! git rev-parse --verify "$git_branch" >/dev/null 2>&1; then
+  echo "❌ Branch '$git_branch' does not exist. Please create it first."
+  exit 1
+fi
 
 read -p "🚀 Enter the remote for ghp-import (default: origin): " ghp_remote
 ghp_remote=${ghp_remote:-origin}
@@ -82,7 +89,10 @@ echo "🧾 Staging changes..."
 git add .
 
 echo "✍️ Committing..."
-git commit -m "$commit_message" || echo "⚠️ Nothing new to commit."
+if git commit -m "$commit_message"; then
+    echo "⬆️ Pushing to [$git_remote/$git_branch]..."
+    git push "$git_remote" "$git_branch" || echo "❌ Push failed."
+else
+    echo "⚠️ Nothing committed. Skipping push."
+fi
 
-echo "⬆️ Pushing to [$git_remote/$git_branch]..."
-git push "$git_remote" "$git_branch" || echo "❌ Push failed."
