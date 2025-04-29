@@ -8,7 +8,7 @@ from pathlib import Path
 import click
 
 def run(cmd, check=True, capture_output=False, cwd=None):
-    """Run shell command."""
+    """Run a shell command with optional output capture."""
     print(f"⚙️  {cmd}")
     result = subprocess.run(cmd, shell=True, check=check, capture_output=capture_output, text=True, cwd=cwd)
     if capture_output:
@@ -18,7 +18,7 @@ def run(cmd, check=True, capture_output=False, cwd=None):
 def branch_exists(branch):
     """Check if a Git branch exists locally."""
     try:
-        run(f"git rev-parse --verify {branch}", check=True, capture_output=True)
+        run(f"git rev-parse --verify {branch}  # checks if the branch exists locally", capture_output=True)
         return True
     except subprocess.CalledProcessError:
         return False
@@ -28,56 +28,54 @@ def branch_exists(branch):
 @click.option('--git-remote', prompt="🛰️ Enter the Git remote to push to", default="origin", show_default=True, help="Git remote name.")
 @click.option('--ghp-remote', prompt="🚀 Enter the remote for ghp-import", default="origin", show_default=True, help="Remote for ghp-import deployment.")
 def main(commit_message, git_remote, ghp_remote):
-    """Deploy the Jupyter Book with cleaning, building, and ghp-import."""
-    
-    # Move to 'ensi/' directory
-    os.chdir(Path(__file__).resolve().parents[1])
+    """Automate the full deploy cycle for a Jupyter Book project."""
 
-    # Get current branch after cd into project
-    current_branch = run("git branch --show-current", capture_output=True) or "main"
+    os.chdir(Path(__file__).resolve().parents[1])  # move into 'ensi/' parent directory
+
+    # Get current Git branch
+    current_branch = run("git branch --show-current  # shows the current branch", capture_output=True) or "main"
     git_branch = click.prompt("🌿 Enter the Git branch to push to", default=current_branch, show_default=True)
 
-    # Validate branch
     if not branch_exists(git_branch):
-        click.secho(f"❌ Branch '{git_branch}' does not exist. Please create it first.", fg="red")
+        click.secho(f"❌ Branch '{git_branch}' does not exist.", fg="red")
         sys.exit(1)
 
-    # Warn if pushing to main
     if git_branch == "main":
-        confirm = click.prompt("⚠️  WARNING: You are pushing to 'main'. Type 'confirm' to proceed", default="", show_default=False)
+        confirm = click.prompt("⚠️  WARNING: Pushing to 'main'. Type 'confirm' to continue", default="", show_default=False)
         if confirm != "confirm":
-            click.secho("🛑 Cancelled push to main.", fg="red")
+            click.secho("🛑 Cancelled push to 'main'", fg="red")
             sys.exit(1)
 
-    # 🪛 Clean and build
-    click.secho("🧼 Cleaning Jupyter Book...", fg="cyan")
-    try:
-        run("jb clean .")
-    except:
-        click.secho("⚠️ jb clean failed (maybe already clean).", fg="yellow")
+    # Sync with remote
+    click.secho("🔄 Fetching remote changes...", fg="cyan")
+    run(f"git fetch {git_remote}  # fetches latest from remote")
 
-    if os.path.exists("bash/bash_clean.sh"):
-        try:
-            run("bash/bash_clean.sh")
-        except:
-            click.secho("ℹ️ No extended clean script found.", fg="yellow")
-
-    click.secho("🏗️ Building Jupyter Book...", fg="cyan")
+    click.secho("🔀 Rebasing local changes...", fg="cyan")
     try:
-        run("jb build .")
+        run(f"git rebase {git_remote}/{git_branch}  # applies local commits on top of remote")
     except:
-        click.secho("❌ Jupyter Book build failed.", fg="red")
+        click.secho("⚠️ Rebase failed. You may need to resolve conflicts manually.", fg="red")
         sys.exit(1)
 
-    # 🍱 Copy extra folders
+    # Clean build environment
+    click.secho("🧼 Cleaning Jupyter Book...", fg="cyan")
+    run("jb clean .")
+
+    if os.path.exists("bash/bash_clean.sh"):
+        run("bash/bash_clean.sh")
+
+    # Build the book
+    click.secho("🏗️ Building Jupyter Book...", fg="cyan")
+    run("jb build .")
+
+    # Copy extra directories into _build/html
     click.secho("📦 Copying extra folders...", fg="cyan")
-    extra_dirs = [
+    extras = [
         "pdfs", "figures", "media", "testbin", "nis", "myhtml", "dedication", "python", "ai",
         "r", "stata", "bash", "xml", "data", "aperitivo", "antipasto", "primo", "secondo",
         "contorno", "insalata", "formaggio-e-frutta", "dolce", "caffe", "digestivo", "ukubona"
     ]
-
-    for d in extra_dirs:
+    for d in extras:
         if os.path.isdir(d):
             dest = os.path.join("_build/html", d)
             os.makedirs(dest, exist_ok=True)
@@ -89,44 +87,40 @@ def main(commit_message, git_remote, ghp_remote):
                 else:
                     shutil.copy2(s, d_)
 
-    # ✂️ Check if build changed
-    click.secho("🔍 Checking if _build/html has changes...", fg="cyan")
+    # Deploy with ghp-import if changes exist
+    click.secho("🔍 Checking if _build/html has changed...", fg="cyan")
     tmp_dir = "/tmp/temp-ghp-check"
+    run(f"git worktree add {tmp_dir} gh-pages  # temp checkout of gh-pages")
+
     try:
-        run(f"git worktree add {tmp_dir} gh-pages")
-    except:
-        pass
+        diff = subprocess.run(["diff", "-r", "_build/html", tmp_dir], capture_output=True)
+        if diff.returncode == 0:
+            click.secho("🧘 No changes detected in HTML.", fg="green")
+        else:
+            click.secho("🚀 Deploying with ghp-import...", fg="cyan")
+            run(f"ghp-import -n -p -f -r {ghp_remote} _build/html")
+    finally:
+        run(f"git worktree remove {tmp_dir} --force  # clean up temp worktree")
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    if os.path.exists(tmp_dir):
-        try:
-            diff = subprocess.run(["diff", "-r", "_build/html", tmp_dir], capture_output=True)
-            if diff.returncode == 0:
-                click.secho("🧘 No changes detected. Skipping ghp-import.", fg="green")
-            else:
-                click.secho("🚀 Changes detected. Deploying with ghp-import...", fg="cyan")
-                run(f"ghp-import -n -p -f -r {ghp_remote} _build/html")
-        finally:
-            run(f"git worktree remove {tmp_dir} --force")
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-
-    # 🦈 Plant flicks
+    # Flicks
     click.secho("🌿 Planting flicks...", fg="cyan")
     try:
         run("python python/plant_flicks_frac.py --percent 23")
     except:
-        click.secho("⚠️ Flick planting encountered issues.", fg="yellow")
+        click.secho("⚠️ Flick planting failed", fg="yellow")
 
-    # 🏝️ Commit and push
+    # Git add/commit/push
     click.secho("🧾 Staging changes...", fg="cyan")
-    run("git add .")
+    run("git add .  # stages all changes")
 
     click.secho("✍️ Committing...", fg="cyan")
     try:
-        run(f"git commit -m \"{commit_message}\"")
-        click.secho(f"⬆️ Pushing to [{git_remote}/{git_branch}]...", fg="cyan")
-        run(f"git push {git_remote} {git_branch}")
+        run(f"git commit -m \"{commit_message}\"  # commit with message")
+        click.secho(f"⬆️ Pushing to {git_remote}/{git_branch}...", fg="cyan")
+        run(f"git push {git_remote} {git_branch}  # push to remote")
     except:
-        click.secho("⚠️ Nothing committed. Skipping push.", fg="yellow")
+        click.secho("⚠️ Nothing to commit or push.", fg="yellow")
 
 if __name__ == "__main__":
     main()
